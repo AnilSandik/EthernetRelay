@@ -1,0 +1,157 @@
+#include <SPI.h>
+#include <Ethernet.h>
+#include <LiquidCrystal.h>
+
+// Arduino server MAC address
+uint8_t mac[] = { 0x00, 0xAA, 0xBB, 0xCC, 0xDE, 0x02 };
+// Arduino server IP address
+//IPAddress ip(192, 168, 137, 3);
+// Arduino server port
+const int port = 23;
+const int pin = 3;
+
+//int LedPin1 = 2;
+//int LedPin2 = 3;
+//int LedPin3 = 4;
+//int LedPin4 = 5;
+//int LedPin5 = 6;
+//int LedPin6 = 7;
+//int LedPin7 = 8;
+//int LedPin8 = 9;
+
+// Pin 14 = Analog in 0
+// Pin 15 = Analog in 1
+// Pin 16 = Analog in 2
+// Pin 17 = Analog in 3
+// Pin 18 = Analog in 4
+// Pin 19 = Analog in 5
+
+
+
+
+// Ethernet server
+EthernetServer server(port);
+
+// For store command from client
+String cmd;
+
+LiquidCrystal lcd(14, 15, 16, 17, 18, 19); // LiquidCrystal(rs, enable, d4, d5, d6, d7) 
+
+
+void setup()
+{
+
+
+  Serial.begin(9600);
+  lcd.begin(16, 2);
+  lcd.clear();
+
+  DDRB |= B00000011;
+  PORTB &= ~B00000011;
+  DDRD |= B11111100;
+  PORTD &= ~B11111100;
+
+  
+
+
+  // Ethernet server initialization
+  Ethernet.begin(mac);
+  delay(100);
+  server.begin();
+  delay(100);
+
+  // Print Arduino server IP address to serial monitor
+  //Serial.print("Server IP Address: ");
+  //Serial.println(Ethernet.localIP());
+
+  lcd.setCursor(0, 0); 
+  lcd.print("IP Adress: "); 
+  lcd.setCursor(0, 1);
+  lcd.print(Ethernet.localIP());
+
+}
+
+void loop()
+{
+
+
+  EthernetClient client = server.available();
+
+  if (client.available())
+  {
+
+    // Read char until new line
+    char c = client.read();
+
+    if (c != '\n')
+    {
+      // Add received char to string variable
+      cmd += c;
+    }
+    else
+    {
+      // Print received command to serial monitor
+      Serial.println("Command: " + cmd);
+
+      // Process the received command
+      processCommand(cmd);
+
+      // Clear variable for receive next command
+      cmd = "";
+    }
+  }
+
+}
+
+void processCommand(String cmd)
+{
+  if (cmd == "Q")
+  {
+    PORTB ^= 0x02; //pin9
+    delay(100);
+    Serial.println("Q state changed");
+  }
+  else if (cmd == "W")
+  {
+    PORTB ^= 0x01;  //pin8
+    delay(100);
+    Serial.println("W state changed");
+  }
+  else if (cmd == "E")
+  {
+    PORTD ^= 0x80;  //pin7
+    delay(100);
+    Serial.println("E state changed");
+  }
+  else if (cmd == "R")
+  {
+    PORTD ^= 0x40; //pin6
+    delay(100);
+    Serial.println("R state changed");
+  }
+  else if (cmd == "T")
+  {
+    PORTD ^= 0x20; //pin5
+    delay(100);
+    Serial.println("T state changed");
+  }
+  else if (cmd == "Y")
+  {
+    PORTD ^= 0x10; //pin4
+    delay(100);
+    Serial.println("Y state changed");
+  }
+  else if (cmd == "U")
+  {
+    PORTD ^= 0x08; //pin3
+    delay(100);
+    Serial.println("U state changed");
+  }
+  else if (cmd == "I")
+  {
+    PORTD ^= 0x04; //pin2
+    delay(100);
+    Serial.println("I state changed");
+  }
+
+}
